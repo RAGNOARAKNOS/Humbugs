@@ -141,3 +141,43 @@ User-Agent.
 
 Run `humbugs serve` whenever you want to view the dashboard (it reads the same
 database the scheduled scrapes write to).
+
+## Releasing
+
+Container images are published to GHCR **only for version tags**. Ordinary
+pushes and pull requests run the tests but never build or publish an image, so
+cutting a release is a deliberate, tag-driven step.
+
+Tags must follow semantic versioning with a leading `v` (e.g. `v1.2.3`) — the
+workflow matches `v*` and derives the image tags from it.
+
+```sh
+# Make sure main is green and up to date first
+git checkout main
+git pull
+
+# Create an annotated tag and push it
+git tag -a v1.0.0 -m "v1.0.0"
+git push origin v1.0.0
+```
+
+Pushing the tag triggers CI to run the tests and then build and publish a
+multi-arch (amd64/arm64) image to
+`ghcr.io/ragnoaraknos/humbugs` with these tags:
+
+| Git tag  | Image tags published                        |
+| -------- | ------------------------------------------- |
+| `v1.2.3` | `1.2.3`, `1.2`, `1`, and `latest`           |
+
+Pull a specific release (or just `latest`) with:
+
+```sh
+docker pull ghcr.io/ragnoaraknos/humbugs:1.0.0
+```
+
+To delete a tag pushed by mistake (before relying on it):
+
+```sh
+git push origin :refs/tags/v1.0.0   # delete remote tag
+git tag -d v1.0.0                   # delete local tag
+```
