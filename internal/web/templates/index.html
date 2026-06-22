@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Humbugs — Royal Mint Stock Tracker</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 960px; color: #1a1a1a; }
+    h1 { font-weight: 600; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid #e2e2e2; }
+    th { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: #666; }
+    a { color: #1a5276; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .badge { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 1rem; font-size: 0.8rem; font-weight: 600; color: #fff; }
+    .badge.available { background: #1e8449; }
+    .badge.preorder { background: #2471a3; }
+    .badge.backorder { background: #b9770e; }
+    .badge.soldout { background: #922b21; }
+    .badge.unknown { background: #888; }
+    .note { font-size: 0.82rem; color: #555; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .muted { color: #888; }
+    .bar { position: relative; height: 0.85rem; width: 90px; background: #eee; border-radius: 0.45rem; overflow: hidden; }
+    .bar > span { position: absolute; left: 0; top: 0; bottom: 0; background: #1e8449; }
+    .bar.low > span { background: #b9770e; }
+    .bar.vlow > span { background: #922b21; }
+    .barlabel { font-size: 0.72rem; color: #555; margin-left: 0.35rem; vertical-align: top; }
+    .trend.down { color: #922b21; font-weight: 600; }
+    .trend.up { color: #1e8449; font-weight: 600; }
+    .trend.flat { color: #888; }
+    .sub { font-size: 0.72rem; color: #555; }
+  </style>
+</head>
+<body>
+  <h1>🪙 Humbugs</h1>
+  <p class="muted">Royal Mint coin stock tracker — {{ len .Coins }} coin(s) tracked.</p>
+  {{ if not .Coins }}
+    <p>No coins tracked yet. Add coins to <code>coins.yaml</code> and run <code>humbugs scrape</code>.</p>
+  {{ else }}
+  <table>
+    <thead>
+      <tr>
+        <th>Coin</th><th>SKU</th><th>Status</th><th class="num">Price</th>
+        <th class="num">Buy</th><th class="num">Preorder</th>
+        <th>Edition remaining</th>
+        <th>Trend (since last)</th>
+        <th>Details</th><th>Last checked</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{ range .Coins }}
+      <tr>
+        <td><a href="/coin/{{ .SKU }}">{{ .Name }}</a></td>
+        <td>{{ .SKU }}</td>
+        {{ if .Latest }}
+        <td><span class="badge {{ .Latest.Availability }}">{{ statusLabel .Latest.Availability }}</span></td>
+        <td class="num">{{ with .Latest.DisplayPrice }}{{ . }}{{ else }}—{{ end }}</td>
+        <td class="num">{{ .Latest.PurchaseAvailableQuantity }}</td>
+        <td class="num">{{ .Latest.PreorderAvailableQuantity }}</td>
+        <td>
+          {{ $pct := .Latest.RemainingPercent }}
+          {{ if ge $pct 0 }}
+          <span class="bar {{ barClass $pct }}"><span style="width: {{ $pct }}%"></span></span>
+          <span class="barlabel">{{ .Latest.TotalAvailable }} / {{ .Latest.LimitedEditionPresentation }} ({{ $pct }}%)</span>
+          {{ else }}<span class="muted">—</span>{{ end }}
+        </td>
+        <td>
+          {{ $ch := .Change }}
+          {{ if $ch }}
+            <span class="trend {{ $ch.Direction }}">{{ $ch.DeltaText }}</span>
+            {{ with $ch.RateText }}<div class="sub">{{ . }}</div>{{ end }}
+            {{ with $ch.SelloutText }}<div class="sub">{{ . }}</div>{{ end }}
+            {{ if $ch.AvailabilityChanged }}<div class="sub">{{ statusLabel $ch.Prev }} → <span class="badge {{ $ch.Now }}">{{ statusLabel $ch.Now }}</span></div>{{ end }}
+            {{ with $ch.SinceText }}<div class="sub muted">{{ . }}</div>{{ end }}
+          {{ else }}<span class="muted">first check</span>{{ end }}
+        </td>
+        <td class="note">
+          {{ with .Latest.StatusMessage }}{{ . }}{{ end }}
+          {{ with .Latest.ShippingMessage }}<br>{{ . }}{{ end }}
+        </td>
+        <td>{{ .LastSeen.Format "2006-01-02 15:04" }}</td>
+        {{ else }}
+        <td><span class="badge unknown">no data</span></td>
+        <td class="num muted">—</td><td class="num muted">—</td>
+        <td class="num muted">—</td><td class="muted">—</td>
+        <td class="muted">—</td><td class="muted">—</td><td class="muted">—</td>
+        {{ end }}
+      </tr>
+      {{ end }}
+    </tbody>
+  </table>
+  {{ end }}
+</body>
+</html>

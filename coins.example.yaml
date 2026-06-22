@@ -1,0 +1,12 @@
+# Humbugs tracked coins. Copy to coins.yaml and edit.
+# Each coin needs a `url` (a Royal Mint product page). `name` is an optional
+# label; if omitted, the product name from the page is used.
+coins:
+  - name: 50 Years of Aardman 2026 50p BU Colour
+    url: https://www.royalmint.com/shop/limited-editions/50-years-of-aardman/50-years-of-aardman-2026-50p-brilliant-uncirculated-colour-coin/?listId=50_years_of_aardman&listName=50%20Years%20of%20Aardman
+
+  - name: 100 Years of Winnie the Pooh Friendship 2026 50p BU Colour
+    url: https://www.royalmint.com/shop/limited-editions/winnie-the-pooh/friendship/100-years-of-winnie-the-pooh-friendship-2026-50p-brilliant-uncirculated-colour-coin/?listId=winnie_the_pooh&listName=Winnie%20the%20Pooh
+
+  - name: 75 Years of Dennis the Menace 2026 50p BU Colour
+    url: https://www.royalmint.com/shop/limited-editions/dennis-the-menace/75-years-of-dennis-the-menace-2026-50p-brilliant-uncirculated-colour-coin/?listId=dennis_the_menace&listName=Dennis%20the%20Menace
