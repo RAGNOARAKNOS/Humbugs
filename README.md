@@ -17,6 +17,28 @@ Requires Go 1.24+ (pure-Go dependencies — no C toolchain needed).
 go build -o humbugs ./cmd/humbugs
 ```
 
+## Dependencies
+
+Humbugs deliberately keeps its dependency footprint small.
+
+**Backend (Go modules — see [`go.mod`](go.mod) for exact versions):**
+
+- [`github.com/PuerkitoBio/goquery`](https://github.com/PuerkitoBio/goquery) —
+  jQuery-style HTML parsing used to scrape Royal Mint product pages.
+- [`modernc.org/sqlite`](https://gitlab.com/cznic/sqlite) — pure-Go SQLite
+  driver for the history database (no C toolchain / CGO required).
+- [`gopkg.in/yaml.v3`](https://github.com/go-yaml/yaml) — parses `coins.yaml`.
+
+Everything else in `go.mod` is an indirect (transitive) dependency pulled in by
+the above.
+
+**Frontend (loaded at runtime via CDN):**
+
+- [Chart.js 4](https://www.chartjs.org/) — renders the stock-history chart on
+  each coin page. Loaded from jsDelivr in
+  [`internal/web/templates/coin.html`](internal/web/templates/coin.html); a
+  network connection is needed to view that chart.
+
 ## Configure
 
 Copy the example config and add the coin product pages you want to track:
