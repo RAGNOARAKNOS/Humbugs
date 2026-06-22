@@ -24,6 +24,12 @@ profile.cov
 go.work
 go.work.sum
 
+# Humbugs runtime data: local SQLite database and user's private coin list
+*.db
+*.db-shm
+*.db-wal
+/coins.yaml
+
 # env file
 .env
 
