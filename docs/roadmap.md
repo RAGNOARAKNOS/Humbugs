@@ -43,6 +43,21 @@ The settings JSON carries more than Humbugs currently models (e.g. media URLs,
 category, brand, ratings). Worth modelling selectively if they prove useful for
 buying decisions — again, `raw_json` means nothing is lost in the meantime.
 
+## Scheduled scraping in containers
+The Docker image runs `serve` as a long-lived process, but `scrape` is a
+one-shot command, so containerised deployments need something external to
+refresh the data on a schedule. Options worth offering:
+
+- **Cron sidecar** — add an [ofelia](https://github.com/mcuadros/ofelia) (or
+  plain cron) service to `docker-compose.yml` that runs
+  `humbugs scrape` against the shared `/data` volume every few hours. Keeps the
+  scraper decoupled from the web server and easy to retune.
+- **Built-in scheduler** — alternatively, a `humbugs serve --scrape-every 3h`
+  flag could run periodic scrapes inside the serve process, removing the need
+  for a sidecar at the cost of coupling the two concerns.
+
+Either way the polite `politeDelay` between fetches should be preserved.
+
 ## Managing removed / stale coins
 Removing a coin from `coins.yaml` currently just stops it being scraped — its
 `coins` row and history remain, and it keeps showing on the dashboard and in
