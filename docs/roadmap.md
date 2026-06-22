@@ -72,3 +72,44 @@ additions:
   seen in the last N hours, so entries dropped from the config or pages that
   stopped resolving are easy to spot. `Coin.LastSeen` already provides the
   signal.
+
+## Collective multi-contributor deployment
+
+Today Humbugs is a single-process tool: one machine scrapes into a local SQLite
+file and serves the dashboard from it. An alternative deployment lets *several
+users contribute scrapes into one shared database* — distributing the scraping
+load while centralising the history everyone views.
+
+The model: a central server owns the database and the coin list and exposes a
+token-gated ingest API; contributors run a lightweight client that fetches the
+coin list, scrapes locally (preserving `politeDelay`), and POSTs results back.
+Reads stay public; writes require a token.
+
+Work involved, roughly in order:
+
+- **Concurrency-safe database.** SQLite is single-writer, so many concurrent
+  contributors need Postgres. `internal/store` already uses `database/sql`, so
+  the change is mostly SQL dialect (`$1` placeholders, `BIGSERIAL`, `TIMESTAMPTZ`,
+  `ON CONFLICT`), a DSN-based `Open`, and replacing the ad-hoc `ALTER TABLE`
+  migrations with a versioned schema.
+- **Provenance & dedup.** Add a `source` column to `snapshots` so each point is
+  attributed to a contributor, and decide a dedup policy when two people scrape
+  the same coin (e.g. accept all and dedupe per time-bucket in `History`).
+- **Ingest API.** A `POST /api/ingest` endpoint in `internal/web`, sharing the
+  `snapshotFrom()` mapping with the client so both build identical models.
+- **Token auth.** A `tokens` table plus middleware on the ingest route
+  (`Authorization: Bearer <token>`, 401 otherwise) and a `humbugs token
+  add/list/revoke` admin command. Read routes remain unauthenticated.
+- **Central coin list.** Promote the `coins` table to the source of truth with a
+  `GET /api/coins` endpoint and a `humbugs coin add <url>` command, replacing the
+  per-contributor `coins.yaml`.
+- **Contributor client.** A `humbugs contribute --server <url> --token <t>`
+  command that fetches the coin list, scrapes, and pushes snapshots. The local
+  `scrape` command stays for admin/dev use.
+- **Deployment.** Add a Postgres service to `docker-compose.yml` and read
+  `DATABASE_URL` from the environment; a hosted setup pairs managed Postgres
+  (Neon/Supabase/RDS) with a container host (Fly.io/Render) terminating HTTPS.
+
+This is a larger change than the other roadmap items and effectively makes
+Humbugs a small service rather than a CLI tool — worth doing only if shared,
+crowd-sourced stock history is a goal.
