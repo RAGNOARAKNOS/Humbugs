@@ -1,0 +1,27 @@
+# Run the Humbugs dashboard with persisted config + database.
+#
+#   docker compose up -d            # build locally and serve on :8080
+#   docker compose run --rm humbugs scrape   # one-shot scrape pass
+#   docker compose run --rm humbugs list     # print tracked coins
+#
+# To use the published image instead of building, comment out `build:` and set
+#   image: ghcr.io/ragnoaraknos/humbugs:latest
+
+services:
+  humbugs:
+    build: .
+    image: ghcr.io/ragnoaraknos/humbugs:latest
+    container_name: humbugs
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      # Persist the SQLite database across restarts.
+      - humbugs-data:/data
+      # Mount your coin list read-only; copy coins.example.yaml to coins.yaml first.
+      - ./coins.yaml:/data/coins.yaml:ro
+    # serve --addr :8080 is the image default; override here if needed.
+    # command: ["serve", "--addr", ":8080"]
+
+volumes:
+  humbugs-data:

@@ -1,0 +1,18 @@
+# Build artifacts and local state — never copy these into the image context.
+*.exe
+*.db
+humbugs
+humbugs-test
+
+# Local config (may contain personal URLs); supply at runtime via volume.
+coins.yaml
+
+# VCS and CI metadata.
+.git
+.github
+.gitignore
+
+# Docs aren't needed in the build.
+docs
+README.md
+LICENSE
