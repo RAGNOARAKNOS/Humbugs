@@ -11,7 +11,8 @@ the original [bookmarklet](docs/bookmarklet.md) did by hand. See the
 
 ## Install / build
 
-Requires Go 1.24+ (pure-Go dependencies — no C toolchain needed).
+Requires Go 1.27.3+ (pure-Go dependencies — no C toolchain needed). With the
+default `GOTOOLCHAIN=auto`, an older Go 1.21+ install downloads it automatically.
 
 ```sh
 go build -o humbugs ./cmd/humbugs
